@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Snake Pro - NEW PLAYER2012</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            flex-direction: column;
+            overflow: hidden;
+            touch-action: manipulation;
+            transition: background-color 0.5s;
+        }
+        canvas {
+            background-color: #228B22;
+            border: 4px solid #fff;
+            max-width: 90vw;
+            max-height: 50vh;
+            display: block;
+        }
+        .controls {
+            display: grid;
+            grid-template-areas: 
+                ". up ."
+                "left down right";
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .btn {
+            width: 65px;
+            height: 65px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            user-select: none;
+            cursor: pointer;
+        }
+        .btn:active { background-color: rgba(255, 255, 255, 0.5); }
+        .up { grid-area: up; } .down { grid-area: down; }
+        .left { grid-area: left; } .right { grid-area: right; }
+    </style>
+</head>
+<body>
+
+    <h3 style="margin: 10px;">السكور: <span id="scoreVal">0</span> | المستوى: <span id="levelVal">1</span></h3>
+    <canvas id="snakeGame" width="400" height="400"></canvas>
+
+    <div class="controls">
+        <div class="btn up" onclick="setDir('UP')">▲</div>
+        <div class="btn left" onclick="setDir('LEFT')">◀</div>
+        <div class="btn down" onclick="setDir('DOWN')">▼</div>
+        <div class="btn right" onclick="setDir('RIGHT')">▶</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("snakeGame");
+        const ctx = canvas.getContext("2d");
+        const scoreElement = document.getElementById("scoreVal");
+        const levelElement = document.getElementById("levelVal");
+
+        let box = 20;
+        let score = 0;
+        let snake = [{ x: 10 * box, y: 10 * box }];
+        let food = {
+            x: Math.floor(Math.random() * 19) * box,
+            y: Math.floor(Math.random() * 19) * box
+        };
+        let d = "";
+        let gameSpeed = 150;
+        let gameOver = false;
+
+        const themes = [
+            { garden: "#228B22", body: "#1a1a1a" },
+            { garden: "#008080", body: "#2c3e50" },
+            { garden: "#800080", body: "#4a148c" },
+            { garden: "#8b0000", body: "#3e2723" }
+        ];
+
+        document.addEventListener("keydown", (e) => {
+            if(e.keyCode == 37 && d != "RIGHT") d = "LEFT";
+            else if(e.keyCode == 38 && d != "DOWN") d = "UP";
+            else if(e.keyCode == 39 && d != "LEFT") d = "RIGHT";
+            else if(e.keyCode == 40 && d != "UP") d = "DOWN";
+        });
+
+        function setDir(newDir) {
+            if(newDir == "LEFT" && d != "RIGHT") d = "LEFT";
+            if(newDir == "UP" && d != "DOWN") d = "UP";
+            if(newDir == "RIGHT" && d != "LEFT") d = "RIGHT";
+            if(newDir == "DOWN" && d != "UP") d = "DOWN";
+        }
+
+        function collision(head, array) {
+            for(let i = 0; i < array.length; i++) {
+                if(head.x == array[i].x && head.y == array[i].y) return true;
+            }
+            return false;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // رسم الثعبان
+            for(let i = 0; i < snake.length; i++) {
+                ctx.font = "20px Arial";
+                // رأس ثعبان وذيل نجوم
+                ctx.fillText(i == 0 ? "🐍" : "⭐", snake[i].x, snake[i].y + box - 2);
+            }
+
+            // رسم التفاحة
+            ctx.fillText("🍎", food.x, food.y + box - 2);
+
+            let snakeX = snake[0].x;
+            let snakeY = snake[0].y;
+
+            if( d == "LEFT") snakeX -= box;
+            if( d == "UP") snakeY -= box;
+            if( d == "RIGHT") snakeX += box;
+            if( d == "DOWN") snakeY += box;
+
+            // أكل التفاحة
+            if(snakeX == food.x && snakeY == food.y) {
+                score++;
+                scoreElement.innerHTML = score;
+                if(gameSpeed > 60) gameSpeed -= 4;
+                updateTheme(score);
+                food = {
+                    x: Math.floor(Math.random() * 19) * box,
+                    y: Math.floor(Math.random() * 19) * box
+                };
+            } else {
+                snake.pop();
+            }
+
+            let newHead = { x: snakeX, y: snakeY };
+
+            // قوانين الخسارة
+            if(snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
+                alert("انتهت اللعبة! سكورك: " + score);
+                location.reload();
+                return;
+            }
+
+            snake.unshift(newHead);
+            setTimeout(draw, gameSpeed);
+        }
+
+        function updateTheme(s) {
+            let idx = Math.min(Math.floor(s / 10), themes.length - 1);
+            canvas.style.backgroundColor = themes[idx].garden;
+            document.body.style.backgroundColor = themes[idx].body;
+            levelElement.innerHTML = idx + 1;
+        }
+
+        // بدء اللعبة
+        draw();
+    </script>
+</body>
+</html>
