@@ -70,5 +70,40 @@
 
         update();
     </script>
+// تعريف الإيموجي الذي اخترته أنت يا بطل
+        const PLAYER_EMOJI = "🚀"; 
+        const OBSTACLE_EMOJI = "☄️"; 
+
+        function drawRocket() {
+            ctx.font = `${rocket.size}px serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            
+            // إضافة ظل أحمر خلف الصاروخ ليعطيه طاقة (Glow Effect)
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "red";
+            ctx.fillText(PLAYER_EMOJI, rocket.x + rocket.size/2, rocket.y + rocket.size/2);
+            ctx.shadowBlur = 0; // إيقاف الظل للعناصر الأخرى
+        }
+
+        function drawObstacles() {
+            ctx.font = "35px serif"; // تكبير حجم النيزك قليلاً ليكون مخيفاً
+            obstacles.forEach((obs, index) => {
+                obs.y += speed;
+                ctx.fillText(OBSTACLE_EMOJI, obs.x + obs.size/2, obs.y + obs.size/2);
+                
+                // كود التصادم مع النيزك ☄️
+                let dx = (obs.x + obs.size/2) - (rocket.x + rocket.size/2);
+                let dy = (obs.y + obs.size/2) - (rocket.y + rocket.size/2);
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < (obs.size/2 + rocket.size/2) - 8) {
+                    gameActive = false;
+                    // تأثير صوتي بصري بسيط (تنبيه)
+                    alert("💥 اصطدم النيزك بالصاروخ! \nنتيجة بطل العلمة: " + score);
+                    location.reload();
+                }
+            });
+        }
 </body>
 </html>
