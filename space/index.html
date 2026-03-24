@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Space Explorer - رحلة الصاروخ</title>
+    <style>
+        body { margin: 0; background: #000; color: white; text-align: center; overflow: hidden; font-family: sans-serif; }
+        canvas { display: block; background: #050510; margin: 0 auto; border: 2px solid #444; width: 100%; max-width: 400px; }
+        .controls { display: flex; justify-content: space-around; padding: 20px; }
+        .btn { width: 80px; height: 80px; background: #8b0000; border-radius: 50%; color: white; font-size: 2rem; border: none; touch-action: manipulation; }
+    </style>
+</head>
+<body>
+    <h1>مغامرة الفضاء 🚀</h1>
+    <p>النتيجة: <span id="score">0</span></p>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="controls">
+        <button class="btn" id="leftBtn">◀</button>
+        <button class="btn" id="rightBtn">▶</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = 400; canvas.height = 500;
+
+        let rocket = { x: 180, y: 430, w: 40, h: 60 };
+        let obstacles = [];
+        let score = 0;
+        let gameActive = true;
+
+        function drawRocket() {
+            ctx.fillStyle = "red";
+            ctx.fillRect(rocket.x, rocket.y, rocket.w, rocket.h);
+        }
+
+        function createObstacle() {
+            if (Math.random() < 0.05) {
+                obstacles.push({ x: Math.random() * 370, y: -50, size: 30 });
+            }
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = "gray";
+            obstacles.forEach((obs, index) => {
+                obs.y += 5;
+                ctx.beginPath(); ctx.arc(obs.x, obs.y, obs.size/2, 0, Math.PI*2); ctx.fill();
+                if (obs.y > rocket.y && obs.y < rocket.y + rocket.h && obs.x > rocket.x && obs.x < rocket.x + rocket.w) {
+                    gameActive = false; alert("انفجر الصاروخ! النتيجة: " + score); location.reload();
+                }
+                if (obs.y > 550) { obstacles.splice(index, 1); score++; document.getElementById("score").innerText = score; }
+            });
+        }
+
+        function update() {
+            if (!gameActive) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawRocket(); createObstacle(); drawObstacles();
+            requestAnimationFrame(update);
+        }
+
+        // تحكم الأسهم + تحكم اللمس
+        document.getElementById("leftBtn").addEventListener("touchstart", () => { if(rocket.x > 0) rocket.x -= 30; });
+        document.getElementById("rightBtn").addEventListener("touchstart", () => { if(rocket.x < 360) rocket.x += 30; });
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft" && rocket.x > 0) rocket.x -= 20;
+            if (e.key === "ArrowRight" && rocket.x < 360) rocket.x += 20;
+        });
+
+        update();
+    </script>
+</body>
+</html>
