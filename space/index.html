@@ -2,17 +2,17 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Space Explorer - رحلة الصاروخ</title>
+    <title>مغامرة الفضاء - NEW PLAYER 2012</title>
     <style>
-        body { margin: 0; background: #000; color: white; text-align: center; overflow: hidden; font-family: sans-serif; }
-        canvas { display: block; background: #050510; margin: 0 auto; border: 2px solid #444; width: 100%; max-width: 400px; }
-        .controls { display: flex; justify-content: space-around; padding: 20px; }
-        .btn { width: 80px; height: 80px; background: #8b0000; border-radius: 50%; color: white; font-size: 2rem; border: none; touch-action: manipulation; }
+        body { margin: 0; background: #000; color: white; text-align: center; overflow: hidden; font-family: 'Segoe UI Emoji', sans-serif; }
+        canvas { display: block; background: #020205; margin: 0 auto; border: 2px solid #333; width: 100%; max-width: 400px; }
+        .controls { display: flex; justify-content: space-around; padding: 25px; }
+        .btn { width: 70px; height: 70px; background: rgba(255, 0, 0, 0.2); border-radius: 50%; color: white; font-size: 2rem; border: 2px solid #8b0000; touch-action: manipulation; }
+        .score-board { font-size: 1.2rem; margin: 10px; color: #ff0; }
     </style>
 </head>
 <body>
-    <h1>مغامرة الفضاء 🚀</h1>
-    <p>النتيجة: <span id="score">0</span></p>
+    <div class="score-board">النتيجة: <span id="score">0</span> 🏆</div>
     <canvas id="gameCanvas"></canvas>
     
     <div class="controls">
@@ -25,85 +25,69 @@
         const ctx = canvas.getContext("2d");
         canvas.width = 400; canvas.height = 500;
 
-        let rocket = { x: 180, y: 430, w: 40, h: 60 };
+        // إعدادات اللاعب والعقبات
+        const PLAYER_EMOJI = "🚀";
+        const OBSTACLE_EMOJI = "☄️";
+        let rocket = { x: 180, y: 420, size: 45 };
         let obstacles = [];
         let score = 0;
         let gameActive = true;
+        let speed = 4;
 
-        function drawRocket() {
-            ctx.fillStyle = "red";
-            ctx.fillRect(rocket.x, rocket.y, rocket.w, rocket.h);
-        }
-
-        function createObstacle() {
-            if (Math.random() < 0.05) {
-                obstacles.push({ x: Math.random() * 370, y: -50, size: 30 });
-            }
-        }
-
-        function drawObstacles() {
-            ctx.fillStyle = "gray";
-            obstacles.forEach((obs, index) => {
-                obs.y += 5;
-                ctx.beginPath(); ctx.arc(obs.x, obs.y, obs.size/2, 0, Math.PI*2); ctx.fill();
-                if (obs.y > rocket.y && obs.y < rocket.y + rocket.h && obs.x > rocket.x && obs.x < rocket.x + rocket.w) {
-                    gameActive = false; alert("انفجر الصاروخ! النتيجة: " + score); location.reload();
-                }
-                if (obs.y > 550) { obstacles.splice(index, 1); score++; document.getElementById("score").innerText = score; }
-            });
-        }
-
-        function update() {
+        function draw() {
             if (!gameActive) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawRocket(); createObstacle(); drawObstacles();
-            requestAnimationFrame(update);
-        }
 
-        // تحكم الأسهم + تحكم اللمس
-        document.getElementById("leftBtn").addEventListener("touchstart", () => { if(rocket.x > 0) rocket.x -= 30; });
-        document.getElementById("rightBtn").addEventListener("touchstart", () => { if(rocket.x < 360) rocket.x += 30; });
-        window.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowLeft" && rocket.x > 0) rocket.x -= 20;
-            if (e.key === "ArrowRight" && rocket.x < 360) rocket.x += 20;
-        });
-
-        update();
-    </script>
-// تعريف الإيموجي الذي اخترته أنت يا بطل
-        const PLAYER_EMOJI = "🚀"; 
-        const OBSTACLE_EMOJI = "☄️"; 
-
-        function drawRocket() {
+            // 1. رسم الصاروخ (بدون أي مربعات خلفه)
             ctx.font = `${rocket.size}px serif`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            
-            // إضافة ظل أحمر خلف الصاروخ ليعطيه طاقة (Glow Effect)
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = "red";
-            ctx.fillText(PLAYER_EMOJI, rocket.x + rocket.size/2, rocket.y + rocket.size/2);
-            ctx.shadowBlur = 0; // إيقاف الظل للعناصر الأخرى
-        }
+            ctx.fillText(PLAYER_EMOJI, rocket.x + 22, rocket.y + 22);
 
-        function drawObstacles() {
-            ctx.font = "35px serif"; // تكبير حجم النيزك قليلاً ليكون مخيفاً
+            // 2. رسم وتحريك النيازك
+            ctx.font = "38px serif";
             obstacles.forEach((obs, index) => {
                 obs.y += speed;
-                ctx.fillText(OBSTACLE_EMOJI, obs.x + obs.size/2, obs.y + obs.size/2);
+                ctx.fillText(OBSTACLE_EMOJI, obs.x + 15, obs.y + 15);
                 
-                // كود التصادم مع النيزك ☄️
-                let dx = (obs.x + obs.size/2) - (rocket.x + rocket.size/2);
-                let dy = (obs.y + obs.size/2) - (rocket.y + rocket.size/2);
-                let distance = Math.sqrt(dx * dx + dy * dy);
+                // حساب التصادم بدقة (المسافة بين الإيموجي)
+                let hitX = (obs.x + 15) - (rocket.x + 22);
+                let hitY = (obs.y + 15) - (rocket.y + 22);
+                let distance = Math.sqrt(hitX * hitX + hitY * hitY);
 
-                if (distance < (obs.size/2 + rocket.size/2) - 8) {
+                if (distance < 35) {
                     gameActive = false;
-                    // تأثير صوتي بصري بسيط (تنبيه)
-                    alert("💥 اصطدم النيزك بالصاروخ! \nنتيجة بطل العلمة: " + score);
+                    alert("💥 تصادم كوني! نتيجتك: " + score);
                     location.reload();
                 }
+
+                if (obs.y > 550) {
+                    obstacles.splice(index, 1);
+                    score++;
+                    document.getElementById("score").innerText = score;
+                    if(score % 5 === 0) speed += 0.3; // تزداد الصعوبة تدريجياً
+                }
             });
+
+            if (Math.random() < 0.04) {
+                obstacles.push({ x: Math.random() * 350, y: -50 });
+            }
+
+            requestAnimationFrame(draw);
         }
+
+        // التحكم باللمس والأسهم
+        function moveLeft() { if(rocket.x > 10) rocket.x -= 35; }
+        function moveRight() { if(rocket.x < 340) rocket.x += 35; }
+
+        document.getElementById("leftBtn").onclick = moveLeft;
+        document.getElementById("rightBtn").onclick = moveRight;
+        window.onkeydown = (e) => {
+            if(e.key === "ArrowLeft") moveLeft();
+            if(e.key === "ArrowRight") moveRight();
+        };
+
+        draw();
+    </script>
 </body>
 </html>
