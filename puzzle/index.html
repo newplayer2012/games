@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Puzzle Master - ترتيب الأرقام</title>
+    <style>
+        body { background-color: #1a1a1a; color: white; text-align: center; font-family: sans-serif; }
+        .grid { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px; justify-content: center; margin-top: 20px; }
+        .tile { width: 100px; height: 100px; background-color: #8b0000; display: flex; justify-content: center; 
+                align-items: center; font-size: 2rem; cursor: pointer; border-radius: 8px; border: 2px solid #fff; }
+        .empty { background-color: #333; cursor: default; border: none; }
+        button { margin-top: 30px; padding: 10px 25px; background: #fff; border: none; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>لعبة ترتيب الأرقام 🧩</h1>
+    <p>رتب الأرقام من 1 إلى 8 بالترتيب الصحيح!</p>
+    <div class="grid" id="board"></div>
+    <button onclick="shuffle()">إعادة خلط</button>
+    <br><br>
+    <button onclick="location.href='../index.html'" style="background:#444; color:white;">العودة للرئيسية</button>
+
+    <script>
+        let tiles = [1, 2, 3, 4, 5, 6, 7, 8, ""];
+        const board = document.getElementById("board");
+
+        function render() {
+            board.innerHTML = "";
+            tiles.forEach((tile, index) => {
+                const div = document.createElement("div");
+                div.className = "tile" + (tile === "" ? " empty" : "");
+                div.innerText = tile;
+                div.onclick = () => move(index);
+                board.appendChild(div);
+            });
+        }
+
+        function move(index) {
+            const emptyIndex = tiles.indexOf("");
+            const neighbors = [index-1, index+1, index-3, index+3];
+            if (neighbors.includes(emptyIndex)) {
+                [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+                render();
+                if (tiles.join(',') === "1,2,3,4,5,6,7,8,") alert("مبروك! أنت عبقري 🏆");
+            }
+        }
+
+        function shuffle() {
+            tiles.sort(() => Math.random() - 0.5);
+            render();
+        }
+        render();
+    </script>
+</body>
+</html>
